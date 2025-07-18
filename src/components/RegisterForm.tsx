@@ -37,9 +37,9 @@ export default function RegisterForm() {
 	) => {
 		if (event.target.files && event.target.files.length > 0) {
 			try {
-        const imageUrl = await uploadImage(event.target.files[0]);
-				setProfileImage(imageUrl); // ✅ 상태 업데이트
-        console.log("이미지 업로드 결과:", imageUrl);
+        const images = await uploadImage(event.target.files[0]);
+				setProfileImage(images.url); // ✅ 상태 업데이트
+        console.log("이미지 업로드 결과:", images.url);
 			} catch (error) {
 				console.error("파일 변환 중 오류 발생:", error);
 			}

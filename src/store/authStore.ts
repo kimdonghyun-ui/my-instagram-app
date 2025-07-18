@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Login, LoginResponse, User, Register, ProfileUpdate } from '../types/auth';
+import { Login, LoginResponse, AuthUser, Register, ProfileUpdate } from '../types/auth';
 import { fetchApi } from "@/lib/fetchApi";
 import { toast } from 'react-hot-toast';
 import { useRedirectStore } from './redirectStore';
@@ -9,11 +9,11 @@ interface AuthStore {
   error: string | null;
   isLoading: boolean;
   accessToken: string | null;
-  user: User | null;
+  user: AuthUser | null;
 
   setIsLoading: (isLoading: boolean) => void;
   setAccessToken: (token: string | null) => void;
-  setUser: (data: User) => void;
+  setUser: (data: AuthUser) => void;
 
   // 로그인 처리
   handleLogin: (data: Login) => Promise<void>;
@@ -70,7 +70,7 @@ export const useAuthStore = create<AuthStore>()(
           }
 
           toast.success('로그인 성공!');
-          useRedirectStore.getState().setLinkName('/'); // ✅ 로그인 후 리다이렉트 처리
+          useRedirectStore.getState().setLinkName('/feed'); // ✅ 로그인 후 리다이렉트 처리
 
         } catch (err) {
           set({ error: '로그인 실패!' });

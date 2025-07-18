@@ -7,7 +7,7 @@ export interface Login {
 // ✅ 로그인 응답 타입
 export interface LoginResponse {
   jwt: string;
-  user: User;
+  user: AuthUser;
 }
 
 // ✅ 회원가입 타입
@@ -31,8 +31,8 @@ export interface RefreshResponse {
   jwt: string;
 }
 
-// ✅ 유저 타입
-export interface User {
+// ✅ 인증 전용 유저 타입 (auth 전용)
+export interface AuthUser {
   id: number;
   username: string;
   email: string;
@@ -43,14 +43,3 @@ export interface User {
   updatedAt: string;
   profileImage: string;
 }
-
-
-
-
-
-
-
-
-
-
-

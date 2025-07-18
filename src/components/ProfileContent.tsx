@@ -22,8 +22,8 @@ export default function ProfileContent() {
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       try {
-        const imageUrl = await uploadImage(event.target.files[0]);
-        setEditedUser(prev => ({ ...prev, profileImage: imageUrl }));
+        const images = await uploadImage(event.target.files[0]);
+        setEditedUser(prev => ({ ...prev, profileImage: images.url }));
       } catch (error) {
         console.error("파일 변환 중 오류 발생:", error);
       }

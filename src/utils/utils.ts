@@ -14,6 +14,7 @@ import { twMerge } from 'tailwind-merge'
 export const getTitleFromPath = (path: string) => {
   const map: Record<string, string> = {
     '/': '메인',
+    '/feed': 'Instagram',
     '/login': '로그인',
     '/profile': 'ME',
     '/register': '회원가입',
