@@ -13,7 +13,8 @@ export interface PostEntity {
       data: UserEntity;
     };
     likes: {
-      data: UserEntity[];
+      // data: UserEntity[];
+      data: { id: number }[];
     };
     comments: {
       data: CommentEntity[];

@@ -3,9 +3,12 @@
 import { useEffect } from 'react';
 import { usePostStore } from '@/store/postStore';
 import PostCard from '@/components/PostCard';
+import FeedWithBottomSheet from '@/components/FeedWithBottomSheet';
 
 export default function FeedPage() {
   const { posts, isLoading, fetchPosts } = usePostStore();
+
+
 
   useEffect(() => {
     fetchPosts();
@@ -24,6 +27,7 @@ export default function FeedPage() {
           <PostCard key={post.id} post={post} />
         ))}
       </div>
+      <FeedWithBottomSheet />
     </main>
   );
 }

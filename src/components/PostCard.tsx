@@ -14,18 +14,24 @@ export default function PostCard({ post }: PostCardProps) {
   const { image, author, caption, likes, comments } = post.attributes;
   const username = author?.data?.attributes?.username || '알 수 없음';
   const { user } = useAuthStore();
-  const { toggleLike } = usePostStore();
-
+  const { toggleLike, setCommentModal } = usePostStore();
 
   // 내가 좋아요 눌렀는지 여부
   const isLiked = !!likes.data.find((u) => u.id === user?.id);
 
+  // 좋아요 누르기
   const handleLike = () => {
     if (!user) {
       console.log('로그인 안 됐을 때 처리');
       return;
     }
-    toggleLike(post.id, user.id);
+    toggleLike(post.id, user.id); // 좋아요 스토어 함수 실행(api 호출)
+  };
+
+  // 댓글 모달 열기
+  const handleComment = () => {
+    setCommentModal(true, post);
+    console.log(true, post)
   };
 
   return (
@@ -72,7 +78,10 @@ export default function PostCard({ post }: PostCardProps) {
       <div className="flex justify-between items-center px-3 py-2">
         <div className="flex items-center space-x-3">
           <IconBtn onClick={handleLike} icon={<Heart />} isActive={isLiked} title="홈" />
-          <MessageCircle className="w-6 h-6 cursor-pointer hover:scale-110 transition-transform" />
+          <IconBtn
+            onClick={handleComment}
+            icon={<MessageCircle />} title="홈" />
+
           <Send className="w-6 h-6 cursor-pointer hover:scale-110 transition-transform" />
         </div>
         <Bookmark className="w-6 h-6 cursor-pointer hover:scale-110 transition-transform" />
