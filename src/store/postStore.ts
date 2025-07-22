@@ -8,10 +8,15 @@ import { useAuthStore } from './authStore';
 
 interface PostStore {
   posts: PostEntity[];
+
+  otherPosts: PostEntity[];
+
   isLoading: boolean;
   error: string | null;
 
   fetchPosts: () => Promise<void>;
+  fetchPostsByUser: (userId: number) => Promise<void>; // ✅ 유저별 게시물 가져오기
+
   createPost: (userId: number, caption: string, imageId: number) => Promise<void>;
   toggleLike: (postId: number, userId: number) => Promise<void>;
 
@@ -24,6 +29,7 @@ interface PostStore {
   setCommentModal: (isOpen: boolean, post?: PostEntity) => void;
   addComment: (content: string, userId: number) => Promise<void>;
 
+  deletePost: () => void;
   setPosts: (posts: PostEntity[]) => void;
   reset: () => void;
 }
@@ -32,6 +38,7 @@ interface PostStore {
 
 export const usePostStore = create<PostStore>((set, get) => ({
   posts: [],
+  otherPosts: [],
   isLoading: false,
   error: null,
 
@@ -55,7 +62,20 @@ export const usePostStore = create<PostStore>((set, get) => ({
     }
   },
 
-
+  // ✅ 유저별 게시물 가져오기
+  fetchPostsByUser: async (userId: number) => {
+    set({ isLoading: true });
+    try {
+      const res = await fetchApi<{ data: PostEntity[] }>(
+        `/posts?filters[author][id][$eq]=${userId}&populate[image]=*`
+      );
+      set({ otherPosts: res.data });
+    } catch (err) {
+      set({ error: '사용자 게시물 불러오기 실패', isLoading: false });
+    } finally {
+      set({ isLoading: false , error: null });
+    }
+  },
 
 
   // ✅ 게시물 생성 (caption: 게시물 내용, imageId: 이미지 ID)
@@ -179,6 +199,8 @@ export const usePostStore = create<PostStore>((set, get) => ({
     set({ selectedPost: updatedPost });
   },
 
+  deletePost: () => set({ posts: [] }),
+  
 
   setPosts: (posts) => set({ posts }),
   reset: () => set({ posts: [], error: null, isLoading: false }),

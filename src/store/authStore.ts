@@ -5,15 +5,26 @@ import { fetchApi } from "@/lib/fetchApi";
 import { toast } from 'react-hot-toast';
 import { useRedirectStore } from './redirectStore';
 
+
+export interface AuthUserWithRelations extends AuthUser {
+  followers?: AuthUser[];    // many-to-many라면 배열
+  following?: AuthUser[];
+  likedPosts?: LikedPost[];  // LikedPost 타입을 별도로 정의
+}
+
+
 interface AuthStore {
   error: string | null;
   isLoading: boolean;
   accessToken: string | null;
   user: AuthUser | null;
-
+  otherProfileData: AuthUserWithRelations | null;
   setIsLoading: (isLoading: boolean) => void;
   setAccessToken: (token: string | null) => void;
   setUser: (data: AuthUser) => void;
+
+
+  toggleFollow: (targetUserId: number) => Promise<void>;
 
   // 로그인 처리
   handleLogin: (data: Login) => Promise<void>;
@@ -21,6 +32,8 @@ interface AuthStore {
   handleRegister: (data: Register) => Promise<void>;
   // 프로필 업데이트 처리
   handleProfileUpdate: (data: ProfileUpdate) => Promise<void>;
+  // 특정 유저 정보 가져오기
+  fetchUserById: (id: number) => Promise<void>;
   // 로그아웃 처리
   performLogout: () => Promise<void>;
   // 스토어 초기화
@@ -34,6 +47,7 @@ export const useAuthStore = create<AuthStore>()(
       isLoading: false,
       accessToken: null,
       user: null,
+      otherProfileData: null,
       setIsLoading: (isLoading: boolean) => set({ isLoading }),
      
       setAccessToken: (data) => set({ accessToken: data }),
@@ -109,7 +123,7 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true, error: null });
         try {
           const user = get().user;
-          const response = await fetchApi<User>(`/users/${user?.id}`, {
+          const response = await fetchApi<AuthUser>(`/users/${user?.id}`, {
             method: "PUT",
             credentials: "include", //httpOnly 쿠키 를 제어하려면 필요
             body: JSON.stringify(data),
@@ -126,6 +140,92 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
+
+      // fetchUserById = 특정 유저 정보 가져오기
+      fetchUserById: async (id: number) => {
+        try {
+          set({ isLoading: true, error: null });
+    
+          // ✅ Strapi에서 특정 유저 가져오기
+          const data = await fetchApi<AuthUserWithRelations>(`/users/${id}?populate=profileImage,following,followers,likedPosts`, {
+            method: 'GET',
+            credentials: 'include',
+          });
+          // return data;
+          set({ otherProfileData: data });
+        } catch (err: any) {
+          console.error('유저 정보 불러오기 실패', err);
+          set({ error: err.message || '유저 불러오기 실패', isLoading: false });
+        }
+      },
+
+
+
+      // toggleFollow = 팔로우/언팔로우 처리
+      toggleFollow: async (targetUserId: number) => {
+        const { user, otherProfileData } = get();
+        if (!user || !otherProfileData) {
+          toast.error("로그인이 필요합니다.");
+          return;
+        }
+      
+        // 현재 상대방 프로필의 followers 배열
+        const currentFollowers = otherProfileData.followers || [];
+      
+        // ✅ 실패 시 롤백할 원본 followers 배열을 백업
+        const prevFollowers = currentFollowers;
+      
+        // 내가 이 사람을 팔로우했는지: followers 배열 안에 내 id가 있는지 확인
+        const isFollowing = currentFollowers.some((f) => f.id === user.id);
+      
+        // UI에 바로 반영할 followers 배열 준비
+        const updatedFollowers = isFollowing
+          ? currentFollowers.filter((f) => f.id !== user.id) // 내 id 제거 (언팔)
+          : [...currentFollowers, user]; // 내 정보 추가 (팔로우)
+      
+        // ✅ 1. 먼저 UI 상태를 갱신 (다시 GET 안 해도 UI가 즉시 업데이트됨)
+        set((state) => ({
+          otherProfileData: {
+            ...state.otherProfileData!,
+            followers: updatedFollowers,
+          },
+        }));
+      
+        try {
+          set({ isLoading: true });
+      
+          // ✅ 2. 백엔드에 PUT 전송
+          const currentFollowingIds: number[] = []; // user.following이 없으니 빈 배열에서 시작
+          const newFollowingIds = isFollowing
+            ? currentFollowingIds.filter((id) => id !== targetUserId)
+            : [...currentFollowingIds, targetUserId];
+      
+          await fetchApi(`/users/${user.id}`, {
+            method: "PUT",
+            credentials: "include",
+            body: JSON.stringify({
+              following: newFollowingIds,
+            }),
+          });
+      
+          toast.success(isFollowing ? "언팔로우 했습니다." : "팔로우 했습니다.");
+        } catch (err) {
+          console.error("팔로우/언팔로우 실패:", err);
+          toast.error("팔로우/언팔로우 실패!");
+      
+          // 🔥 실패 시 UI 상태를 롤백
+          set((state) => ({
+            otherProfileData: {
+              ...state.otherProfileData!,
+              followers: prevFollowers, // 원래 상태로 되돌림
+            },
+          }));
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+      
+      
       // performLogout = 로그아웃 처리
       performLogout: async () => {
         set({ isLoading: true, error: null });

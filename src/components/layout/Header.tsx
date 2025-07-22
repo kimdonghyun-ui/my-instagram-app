@@ -321,7 +321,7 @@ export default function Header({showBackButton = false}: {showBackButton?: boole
   const router = useRouter();
   const path = usePathname();
   const accessToken = useAuthStore((state) => state.accessToken);
-  const { performLogout } = useAuthStore();
+  const { performLogout, user } = useAuthStore();
 
   const handleLogout = async () => {
     await performLogout();
@@ -364,12 +364,12 @@ export default function Header({showBackButton = false}: {showBackButton?: boole
         <div className="flex items-center space-x-3 sm:space-x-5">
           {accessToken ? (
             <>
-              <IconBtn onClick={() => router.push('/')} icon={<Home />} title="홈" />
+              <IconBtn onClick={() => router.push('/feed')} icon={<Home />} title="홈" />
               <IconBtn onClick={() => router.push('/messages')} icon={<Send />} title="쪽지" />
               <IconBtn onClick={() => router.push('/upload')} icon={<PlusSquare />} title="만들기" />
               <IconBtn onClick={() => router.push('/explore')} icon={<Compass />} title="탐색" />
               <IconBtn onClick={() => router.push('/activity')} icon={<Heart />} title="알림" />
-              <IconBtn onClick={() => router.push('/profile')} icon={<User />} title="프로필" />
+              <IconBtn onClick={() => router.push(`/profile/${user?.id}`)} icon={<User />} title="프로필" />
               <IconBtn onClick={handleLogout} icon={<LogOut />} title="로그아웃" />
               <DarkModeToggle />
             </>

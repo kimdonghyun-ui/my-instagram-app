@@ -4,7 +4,7 @@ import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from 'lucide-rea
 import { IconBtn } from '@/components/ui/IconBtn';
 import { useAuthStore } from '@/store/authStore';
 import { usePostStore } from '@/store/postStore';
-
+import { useRouter } from 'next/navigation';
 
 interface PostCardProps {
   post: PostEntity;
@@ -15,7 +15,8 @@ export default function PostCard({ post }: PostCardProps) {
   const username = author?.data?.attributes?.username || '알 수 없음';
   const { user } = useAuthStore();
   const { toggleLike, setCommentModal } = usePostStore();
-
+  const router = useRouter();
+  
   // 내가 좋아요 눌렀는지 여부
   const isLiked = !!likes.data.find((u) => u.id === user?.id);
 
@@ -38,7 +39,7 @@ export default function PostCard({ post }: PostCardProps) {
     <article className="bg-white border-b border-gray-200">
       {/* 작성자 영역 */}
       <div className="flex items-center justify-between px-3 py-2">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3" onClick={() => router.push(`/profile/${author?.data?.id}`)}>
           <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-200">
             {/* 프로필 이미지 */}
             {author?.data?.attributes?.profileImage && (
@@ -54,7 +55,7 @@ export default function PostCard({ post }: PostCardProps) {
           </div>
           <span className="text-sm font-semibold">{username}</span>
         </div>
-        <MoreHorizontal className="w-5 h-5 text-gray-600" />
+        {/* <MoreHorizontal className="w-5 h-5 text-gray-600" /> */}
       </div>
 
       {/* 게시물 이미지 */}
