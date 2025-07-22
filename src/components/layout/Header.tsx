@@ -365,10 +365,10 @@ export default function Header({showBackButton = false}: {showBackButton?: boole
           {accessToken ? (
             <>
               <IconBtn onClick={() => router.push('/feed')} icon={<Home />} title="홈" />
-              <IconBtn onClick={() => router.push('/messages')} icon={<Send />} title="쪽지" />
+              {/* <IconBtn onClick={() => router.push('/messages')} icon={<Send />} title="쪽지" /> */}
               <IconBtn onClick={() => router.push('/upload')} icon={<PlusSquare />} title="만들기" />
-              <IconBtn onClick={() => router.push('/explore')} icon={<Compass />} title="탐색" />
-              <IconBtn onClick={() => router.push('/activity')} icon={<Heart />} title="알림" />
+              {/* <IconBtn onClick={() => router.push('/explore')} icon={<Compass />} title="탐색" /> */}
+              {/* <IconBtn onClick={() => router.push('/activity')} icon={<Heart />} title="알림" /> */}
               <IconBtn onClick={() => router.push(`/profile/${user?.id}`)} icon={<User />} title="프로필" />
               <IconBtn onClick={handleLogout} icon={<LogOut />} title="로그아웃" />
               <DarkModeToggle />

@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { PostEntity } from '@/types/index';
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Send } from 'lucide-react';
 import { IconBtn } from '@/components/ui/IconBtn';
 import { useAuthStore } from '@/store/authStore';
 import { usePostStore } from '@/store/postStore';
@@ -83,9 +83,8 @@ export default function PostCard({ post }: PostCardProps) {
             onClick={handleComment}
             icon={<MessageCircle />} title="홈" />
 
-          <Send className="w-6 h-6 cursor-pointer hover:scale-110 transition-transform" />
+          {/* <Send className="w-6 h-6 cursor-pointer hover:scale-110 transition-transform" /> */}
         </div>
-        <Bookmark className="w-6 h-6 cursor-pointer hover:scale-110 transition-transform" />
       </div>
 
       {/* 좋아요 수 */}
@@ -96,19 +95,13 @@ export default function PostCard({ post }: PostCardProps) {
       </div>
 
       {/* 캡션 */}
-      <div className="px-3 py-1">
+      <div className="px-3 py-1 pb-3">
         <p className="text-sm">
           <span className="font-semibold mr-1">{username}</span>
           {caption}
         </p>
       </div>
 
-      {/* 댓글 개수 */}
-      <div className="px-3 pb-3">
-        <p className="text-sm text-gray-500">
-          댓글 {post.attributes.comments?.data?.length || 0}개 모두 보기
-        </p>
-      </div>
     </article>
   );
 }
