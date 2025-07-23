@@ -7,10 +7,11 @@ import Image from 'next/image';
 import { uploadImage } from '@/utils/uploadImage';
 import { toast } from 'react-hot-toast';
 import { Heart, Image as ImageIcon, Users, UserPlus } from 'lucide-react';
+import InfiniteScroll from '@/components/InfiniteScroll';
 
 export default function ProfileContent({ paramsUserId }: { paramsUserId: string }) { // paramsUserId = 프로필 페이지 유저의 id
   const { user, handleProfileUpdate, fetchUserById, toggleFollow, otherProfileData } = useAuthStore();
-  const { fetchPostsByUser, otherPosts } = usePostStore();
+  const { fetchPostsByUser, otherPosts, otherPostsHasMore } = usePostStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({
     username: user?.username || '',
@@ -64,13 +65,27 @@ export default function ProfileContent({ paramsUserId }: { paramsUserId: string 
     }
   };
 
+
+  const [page, setPage] = useState(1);
+  const limit = 3; // 한 번에 2개씩
+
+
+  // onLoadMore
+  const loadMore = async () => {
+    const nextPage = page + 1;
+    await fetchPostsByUser(Number(paramsUserId),nextPage, limit);
+    setPage(nextPage);
+  };
+
+
   // ✅ 게시물 / 프로필 불러오기
   useEffect(() => {
     if (!paramsUserId) return;
+    usePostStore.setState({ otherPosts: []});
     const loadData = async () => {
       try {
         await Promise.all([
-          fetchPostsByUser(Number(paramsUserId)),
+          fetchPostsByUser(Number(paramsUserId),page, limit),
           fetchUserById(Number(paramsUserId)),
         ]);
       } catch (err) {
@@ -78,6 +93,10 @@ export default function ProfileContent({ paramsUserId }: { paramsUserId: string 
       }
     };
     loadData();
+    return () => {
+      // unmount 시점에 store의 posts 초기화
+      // usePostStore.setState({ otherPosts: [], otherPostsHasMore: true});
+    };
   }, [paramsUserId]);
 
   // 프로필 수정 모드에 따른 상태 초기화
@@ -252,20 +271,51 @@ export default function ProfileContent({ paramsUserId }: { paramsUserId: string 
       </section>
 
       {/* 게시물 리스트 */}
-      <section className="grid grid-cols-3 gap-1 p-1">
-        {otherPosts.map((post) => (
-          <div key={post.id} className="relative aspect-square">
-            {post.attributes.image?.data?.attributes?.url && (
-              <Image
-                src={post.attributes.image.data.attributes.url}
-                alt="post"
-                fill
-                className="object-cover"
-              />
-            )}
-          </div>
-        ))}
-      </section>
+      {/* ✅ InfiniteScroll = 무한 스크롤 컴포넌트 */}
+      <InfiniteScroll
+        onLoadMore={loadMore} // 무한스크롤 액션시 실행할 함수
+        hasMore={otherPostsHasMore} // 더 불러올 데이터가 있는지 여부(이건 api 응답 값에서 전역적으로 관리)
+        isLoading={isLoading} // 로딩 상태
+        loader={null} // 로딩 스피너(커스텀한걸 넣고싶으면 여기다 넣으면된 null은 기본 스피너)
+      >
+        <section className="grid grid-cols-3 gap-1 p-1">
+          {otherPosts.map((post) => (
+            <div key={post.id} className="relative aspect-square">
+              {post.attributes.image?.data?.attributes?.url && (
+                <Image
+                  src={post.attributes.image.data.attributes.url}
+                  alt="post"
+                  fill
+                  className="object-cover"
+                />
+              )}
+            </div>
+          ))}
+        </section>
+      </InfiniteScroll>
+
+      {/* ✅ 게시물이 없을 때 */}
+      {!isLoading && otherPosts.length === 0 && (
+        <div className="flex flex-col items-center justify-center h-[60vh] text-gray-500">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-16 h-16 mb-4 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.5}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 8.25V18a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 18V8.25M3 8.25l2.625-3.5A1.125 1.125 0 016.375 4.5h11.25c.36 0 .698.168.9.45l2.475 3.3M3 8.25h18M12 15.75a3 3 0 100-6 3 3 0 000 6z"
+            />
+          </svg>
+          <p className="text-lg font-semibold mb-1">아직 게시물이 없어요</p>
+          <p className="text-sm text-gray-400">이 사용자가 아직 게시물을 작성하지 않았어요.</p>
+        </div>
+      )}
+
     </div>
   );
 }

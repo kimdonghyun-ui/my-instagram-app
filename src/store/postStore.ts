@@ -8,14 +8,14 @@ import { useAuthStore } from './authStore';
 
 interface PostStore {
   posts: PostEntity[];
-
+  postsHasMore: boolean;
   otherPosts: PostEntity[];
-
+  otherPostsHasMore: boolean;
   isLoading: boolean;
   error: string | null;
 
-  fetchPosts: () => Promise<void>;
-  fetchPostsByUser: (userId: number) => Promise<void>; // ✅ 유저별 게시물 가져오기
+  fetchPosts: (page: number, limit: number) => Promise<void>;
+  fetchPostsByUser: (userId: number,page: number, limit: number) => Promise<void>; // ✅ 유저별 게시물 가져오기
 
   createPost: (userId: number, caption: string, imageId: number) => Promise<void>;
   toggleLike: (postId: number, userId: number) => Promise<void>;
@@ -38,7 +38,10 @@ interface PostStore {
 
 export const usePostStore = create<PostStore>((set, get) => ({
   posts: [],
+  postsHasMore: true,
   otherPosts: [],
+  otherPostsHasMore: true,
+
   isLoading: false,
   error: null,
 
@@ -48,12 +51,21 @@ export const usePostStore = create<PostStore>((set, get) => ({
   selectedPost: null,
 
   // ✅ 피드 불러오기
-  fetchPosts: async () => {
+  fetchPosts: async (page: number, limit: number) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetchApi<StrapiResponse<PostEntity[]>>('/posts?populate[author]=profileImage&populate[image]=*&populate[likes]=*&populate[comments][populate]=author');
-      
-      set({ posts: response.data });
+      // const response = await fetchApi<StrapiResponse<PostEntity[]>>('/posts?populate[author]=profileImage&populate[image]=*&populate[likes]=*&populate[comments][populate]=author');
+      const response = await fetchApi<StrapiResponse<PostEntity[]>>(`/posts?pagination[page]=${page}&pagination[pageSize]=${limit}&populate[author]=profileImage&populate[image]=*&populate[likes]=*&populate[comments][populate]=author`);
+      const pageCount = response.meta.pagination.pageCount;
+      set((state) => {
+        const merged = [...state.posts, ...response.data];
+        return {
+          posts: merged,
+          postsHasMore: page < pageCount, // 한 번에 결정
+          isLoading: false,
+          error: null,
+        };
+      });
     } catch (err) {
       set({ error: '게시물 불러오기 실패' });
       toast.error('피드 불러오기 실패!');
@@ -63,15 +75,24 @@ export const usePostStore = create<PostStore>((set, get) => ({
   },
 
   // ✅ 유저별 게시물 가져오기
-  fetchPostsByUser: async (userId: number) => {
+  fetchPostsByUser: async (userId: number,page: number, limit: number) => {
     set({ isLoading: true });
     try {
-      const res = await fetchApi<{ data: PostEntity[] }>(
-        `/posts?filters[author][id][$eq]=${userId}&populate[image]=*`
+      const response = await fetchApi<StrapiResponse<PostEntity[]>>(
+        `/posts?pagination[page]=${page}&pagination[pageSize]=${limit}&filters[author][id][$eq]=${userId}&populate[image]=*`
       );
-      set({ otherPosts: res.data });
+      const pageCount = response.meta.pagination.pageCount;
+      set((state) => {
+        const merged = [...state.otherPosts, ...response.data];
+        return {
+          otherPosts: merged,
+          otherPostsHasMore: page < pageCount, // 한 번에 결정
+          isLoading: false,
+          error: null,
+        };
+      });
     } catch (err) {
-      set({ error: '사용자 게시물 불러오기 실패', isLoading: false });
+      set({ error: '사용자 게시물 불러오기 실패' });
     } finally {
       set({ isLoading: false , error: null });
     }
@@ -94,7 +115,7 @@ export const usePostStore = create<PostStore>((set, get) => ({
         }),
       });
       // ✅ 3. 피드 새로고침
-      await get().fetchPosts();
+      await get().fetchPosts(1, 3);
     } catch (err) {
       set({ error: '게시물 생성 실패' });
       toast.error('게시물 생성 실패!');
@@ -192,7 +213,7 @@ export const usePostStore = create<PostStore>((set, get) => ({
 
 
     // ✅ 다시 게시물 목록 불러와서 상태 갱신
-    await get().fetchPosts();
+    await get().fetchPosts(1, 3);
 
     // ✅ 현재 선택된 게시물도 최신 데이터로 갱신
     const updatedPost = get().posts.find((p) => p.id === selectedPost.id) || null;

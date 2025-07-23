@@ -1,28 +1,53 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePostStore } from '@/store/postStore';
 import { Plus } from "lucide-react";
 import PostCard from '@/components/PostCard';
 import FeedWithBottomSheet from '@/components/FeedWithBottomSheet';
 import { useRouter } from 'next/navigation';
+import InfiniteScroll from '@/components/InfiniteScroll';
 
 export default function FeedPage() {
-  const { posts, isLoading, fetchPosts } = usePostStore();
+  const { posts, isLoading, fetchPosts, postsHasMore } = usePostStore();
   const router = useRouter();
+  const [page, setPage] = useState(1);
+  const limit = 3; // 한 번에 2개씩
 
 
+  // 초기 1페이지
   useEffect(() => {
-    fetchPosts();
+    fetchPosts(page, limit);
+    return () => {
+      // unmount 시점에 store의 posts 초기화
+      usePostStore.setState({ posts: [], postsHasMore: true });
+    };
   }, []);
+
+  // onLoadMore
+  const loadMore = async () => {
+    const nextPage = page + 1;
+    await fetchPosts(nextPage, limit);
+    setPage(nextPage);
+  };
 
   return (
     <main className="max-w-md mx-auto border-x border-gray-200 min-h-screen bg-gray-50">
 
-      {isLoading && <p className="p-4 text-center text-gray-500">불러오는 중...</p>}
+      {/* ✅ 로딩 인디케이터 (로딩중 노출) */}
+      {isLoading && (
+        <div className="fixed inset-0 flex justify-center items-center bg-white/50 z-50">
+          <div className="flex space-x-2">
+            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ 게시물이 없을 때 */}
       {!isLoading && posts.length === 0 && (
         <div className="flex flex-col items-center justify-center h-[60vh] text-gray-500">
-          {/* 카메라 아이콘이나 빈 상태 아이콘 */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="w-16 h-16 mb-4 text-gray-400"
@@ -48,16 +73,22 @@ export default function FeedPage() {
           >
             <Plus className="w-6 h-6" strokeWidth={2.5} />
           </button>
-
         </div>
       )}
 
-
-      <div className="flex flex-col">
+      {/* ✅ InfiniteScroll = 무한 스크롤 컴포넌트 */}
+      <InfiniteScroll
+        onLoadMore={loadMore} // 무한스크롤 액션시 실행할 함수
+        hasMore={postsHasMore} // 더 불러올 데이터가 있는지 여부(이건 api 응답 값에서 전역적으로 관리)
+        isLoading={isLoading} // 로딩 상태
+        loader={null} // 로딩 스피너(커스텀한걸 넣고싶으면 여기다 넣으면된 null은 기본 스피너)
+      >
         {posts.map((post) => (
           <PostCard key={post.id} post={post} />
         ))}
-      </div>
+      </InfiniteScroll>
+
+      {/* ✅ 댓글 모달 */}
       <FeedWithBottomSheet />
     </main>
   );
