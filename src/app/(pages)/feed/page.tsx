@@ -17,7 +17,7 @@ export default function FeedPage() {
 
   // 초기 1페이지
   useEffect(() => {
-    fetchPosts(page, limit);
+    fetchPosts({page, limit});
     return () => {
       // unmount 시점에 store의 posts 초기화
       usePostStore.setState({ posts: [], postsHasMore: true });
@@ -27,7 +27,7 @@ export default function FeedPage() {
   // onLoadMore
   const loadMore = async () => {
     const nextPage = page + 1;
-    await fetchPosts(nextPage, limit);
+    await fetchPosts({page: nextPage, limit});
     setPage(nextPage);
   };
 

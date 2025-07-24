@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import DarkModeToggle from '../DarkModeToggle';
 import { useAuthStore } from '@/store/authStore';
@@ -12,15 +13,29 @@ import {
   Search,
   Instagram
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { usePostStore } from '@/store/postStore';
 
 export default function Header({ showBackButton = false }: { showBackButton?: boolean }) {
   const router = useRouter();
   const path = usePathname();
   const accessToken = useAuthStore((state) => state.accessToken);
   const { performLogout, user } = useAuthStore();
-
+  const { fetchPosts } = usePostStore();
   const handleLogout = async () => {
     await performLogout();
+  };
+
+  const [query, setQuery] = useState('');
+
+  const handleSearch = (value: string) => {
+    setQuery(value);
+  };
+
+  const onSubmit = () => {
+    toast.success('전송');
+    fetchPosts({ page: 1, limit: 10, query: query });
+
   };
 
   return (
@@ -36,7 +51,7 @@ export default function Header({ showBackButton = false }: { showBackButton?: bo
         {path === '/feed' ? (
           <div
             className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/feed')}
           >
             <Instagram className="w-[28px] h-[28px] text-pink-500 dark:text-pink-400" />
             <span className="
@@ -70,10 +85,20 @@ export default function Header({ showBackButton = false }: { showBackButton?: bo
           rounded-full px-3 py-1.5
           shadow-inner
         ">
-          <Search className="w-4 h-4 text-gray-500 mr-2" />
+          <Search className="w-4 h-4 text-gray-500 mr-2" onClick={onSubmit} />
           <input
             type="text"
             placeholder="검색"
+            value={query}
+            onChange={(e) => handleSearch(e.target.value)}
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+              // 한글 입력 조합 중이면 무시
+              // if (e.nativeEvent.isComposing) return;
+              if (e.nativeEvent.isComposing) return;
+              if (e.key === 'Enter') {
+                onSubmit();
+              }
+            }}
             className="
               bg-transparent outline-none text-sm
               text-gray-800 dark:text-gray-200

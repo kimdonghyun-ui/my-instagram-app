@@ -14,7 +14,7 @@ interface PostStore {
   isLoading: boolean;
   error: string | null;
 
-  fetchPosts: (page: number, limit: number) => Promise<void>;
+  fetchPosts: ({page, limit, query}: {page: number, limit: number, query?: string}) => Promise<void>;
   fetchPostsByUser: (userId: number,page: number, limit: number) => Promise<void>; // ✅ 유저별 게시물 가져오기
 
   createPost: (userId: number, caption: string, imageId: number) => Promise<void>;
@@ -51,17 +51,27 @@ export const usePostStore = create<PostStore>((set, get) => ({
   selectedPost: null,
 
   // ✅ 피드 불러오기
-  fetchPosts: async (page: number, limit: number) => {
+  fetchPosts: async ({page, limit, query}: {page: number, limit: number, query?: string}) => {
+    console.log('fetchPosts', page, limit, query);
     set({ isLoading: true, error: null });
     try {
-      // const response = await fetchApi<StrapiResponse<PostEntity[]>>('/posts?populate[author]=profileImage&populate[image]=*&populate[likes]=*&populate[comments][populate]=author');
-      const response = await fetchApi<StrapiResponse<PostEntity[]>>(`/posts?pagination[page]=${page}&pagination[pageSize]=${limit}&populate[author]=profileImage&populate[image]=*&populate[likes]=*&populate[comments][populate]=author`);
+    // 기본 쿼리
+    let url = `/posts?pagination[page]=${page}&pagination[pageSize]=${limit}` +
+              `&populate[author]=profileImage&populate[image]=*&populate[likes]=*&populate[comments][populate]=author`;
+    // ✅ 검색어가 있으면 유저명 OR 게시물 내용 검색 쿼리 추가
+    if (query && query.trim() !== '') {
+      const q = encodeURIComponent(query.trim());
+      url += `&filters[$or][0][author][username][$containsi]=${q}` +
+             `&filters[$or][1][caption][$containsi]=${q}`;
+    }
+    const response = await fetchApi<StrapiResponse<PostEntity[]>>(url);
       const pageCount = response.meta.pagination.pageCount;
       set((state) => {
-        const merged = [...state.posts, ...response.data];
+        // 검색 중이면 기존 posts를 초기화하고 새로운 결과로 덮기
+        const merged = page === 1 ? response.data : [...state.posts, ...response.data];
         return {
           posts: merged,
-          postsHasMore: page < pageCount, // 한 번에 결정
+          postsHasMore: page < pageCount,
           isLoading: false,
           error: null,
         };
