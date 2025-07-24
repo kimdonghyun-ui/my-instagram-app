@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePostStore } from '@/store/postStore';
 import { Plus } from "lucide-react";
 import PostCard from '@/components/PostCard';
@@ -22,7 +22,7 @@ export default function FeedPage() {
       // unmount 시점에 store의 posts 초기화
       usePostStore.setState({ posts: [], postsHasMore: true });
     };
-  }, []);
+  }, [fetchPosts, page]);
 
   // onLoadMore
   const loadMore = async () => {

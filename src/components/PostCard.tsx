@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { PostEntity } from '@/types/index';
-import { Heart, MessageCircle, Send } from 'lucide-react';
+import { Heart, MessageCircle } from 'lucide-react';
 import { IconBtn } from '@/components/ui/IconBtn';
 import { useAuthStore } from '@/store/authStore';
 import { usePostStore } from '@/store/postStore';
@@ -11,7 +11,7 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post }: PostCardProps) {
-  const { image, author, caption, likes, comments } = post.attributes;
+  const { image, author, caption, likes } = post.attributes;
   const username = author?.data?.attributes?.username || '알 수 없음';
   const { user } = useAuthStore();
   const { toggleLike, setCommentModal } = usePostStore();

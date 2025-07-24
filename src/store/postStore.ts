@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import { CommentEntity, PostEntity } from '@/types/index';
 import { StrapiResponse } from '@/types/strapi';
 // import { uploadImage } from '@/utils/uploadImage';
-import { useAuthStore } from './authStore';
+// import { useAuthStore } from './authStore';
 
 interface PostStore {
   posts: PostEntity[];
@@ -76,7 +76,7 @@ export const usePostStore = create<PostStore>((set, get) => ({
           error: null,
         };
       });
-    } catch (err) {
+    } catch {
       set({ error: '게시물 불러오기 실패' });
       toast.error('피드 불러오기 실패!');
     } finally {
@@ -101,7 +101,7 @@ export const usePostStore = create<PostStore>((set, get) => ({
           error: null,
         };
       });
-    } catch (err) {
+    } catch {
       set({ error: '사용자 게시물 불러오기 실패' });
     } finally {
       set({ isLoading: false , error: null });
@@ -125,7 +125,7 @@ export const usePostStore = create<PostStore>((set, get) => ({
         }),
       });
       // ✅ 3. 피드 새로고침
-      await get().fetchPosts(1, 3);
+      await get().fetchPosts({page: 1, limit: 3});
     } catch (err) {
       set({ error: '게시물 생성 실패' });
       toast.error('게시물 생성 실패!');
@@ -223,7 +223,7 @@ export const usePostStore = create<PostStore>((set, get) => ({
 
 
     // ✅ 다시 게시물 목록 불러와서 상태 갱신
-    await get().fetchPosts(1, 3);
+    await get().fetchPosts({page: 1, limit: 3});
 
     // ✅ 현재 선택된 게시물도 최신 데이터로 갱신
     const updatedPost = get().posts.find((p) => p.id === selectedPost.id) || null;

@@ -6,6 +6,15 @@ import { toast } from 'react-hot-toast';
 import { useRedirectStore } from './redirectStore';
 
 
+export interface LikedPost {
+  id: number;
+  caption: string;
+  createdAt: string;
+  publishedAt: string;
+  updatedAt: string;
+}
+
+
 export interface AuthUserWithRelations extends AuthUser {
   followers?: AuthUser[];    // many-to-many라면 배열
   following?: AuthUser[];
@@ -153,9 +162,9 @@ export const useAuthStore = create<AuthStore>()(
           });
           // return data;
           set({ otherProfileData: data });
-        } catch (err: any) {
+        } catch (err) {
           console.error('유저 정보 불러오기 실패', err);
-          set({ error: err.message || '유저 불러오기 실패', isLoading: false });
+          set({ error: '유저 불러오기 실패', isLoading: false });
         }
       },
 
@@ -237,7 +246,7 @@ export const useAuthStore = create<AuthStore>()(
           }, false);
 
           toast.success('로그아웃 성공!');
-        } catch (err) {
+        } catch {
 
           //refreshToken 쿠키 삭제(위에 로그아웃 api 실패시를 대비)
           await fetch("/api/set-cookie", {

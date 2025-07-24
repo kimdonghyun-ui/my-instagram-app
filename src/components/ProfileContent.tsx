@@ -85,7 +85,7 @@ export default function ProfileContent({ paramsUserId }: { paramsUserId: string 
     const loadData = async () => {
       try {
         await Promise.all([
-          fetchPostsByUser(Number(paramsUserId),page, limit),
+          fetchPostsByUser(Number(paramsUserId),1, limit),
           fetchUserById(Number(paramsUserId)),
         ]);
       } catch (err) {
@@ -97,7 +97,7 @@ export default function ProfileContent({ paramsUserId }: { paramsUserId: string 
       // unmount 시점에 store의 posts 초기화
       // usePostStore.setState({ otherPosts: [], otherPostsHasMore: true});
     };
-  }, [paramsUserId]);
+  }, [paramsUserId, fetchPostsByUser, fetchUserById ]);
 
   // 프로필 수정 모드에 따른 상태 초기화
   useEffect(() => {

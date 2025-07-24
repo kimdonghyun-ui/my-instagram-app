@@ -35,15 +35,6 @@ export default function UploadPage() {
     };
 
 
-
-//   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const selected = e.target.files?.[0];
-//     if (selected) {
-//       setFile(selected);
-//       setPreview(URL.createObjectURL(selected));
-//     }
-//   };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const userId = user?.id;
@@ -55,7 +46,7 @@ export default function UploadPage() {
             await createPost(userId, caption, imageId);
             toast.success('업로드 성공!');
             router.push('/feed');
-        } catch (err) {
+        } catch {
             toast.error('업로드 실패!');
         } finally {
             setIsUploading(false);
