@@ -57,6 +57,7 @@ export const usePostStore = create<PostStore>((set, get) => ({
     try {
     // 기본 쿼리
     let url = `/posts?pagination[page]=${page}&pagination[pageSize]=${limit}` +
+              `&sort[0]=createdAt:desc` + // ✅ 최신순으로 정렬
               `&populate[author]=profileImage&populate[image]=*&populate[likes]=*&populate[comments][populate]=author`;
     // ✅ 검색어가 있으면 유저명 OR 게시물 내용 검색 쿼리 추가
     if (query && query.trim() !== '') {
@@ -89,7 +90,9 @@ export const usePostStore = create<PostStore>((set, get) => ({
     set({ isLoading: true });
     try {
       const response = await fetchApi<StrapiResponse<PostEntity[]>>(
-        `/posts?pagination[page]=${page}&pagination[pageSize]=${limit}&filters[author][id][$eq]=${userId}&populate[image]=*`
+        `/posts?pagination[page]=${page}&pagination[pageSize]=${limit}` +
+        `&sort[0]=createdAt:desc` + // ✅ 최신순으로 정렬
+        `&filters[author][id][$eq]=${userId}&populate[image]=*`
       );
       const pageCount = response.meta.pagination.pageCount;
       set((state) => {

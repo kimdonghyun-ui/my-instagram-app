@@ -13,7 +13,6 @@ import {
   Search,
   Instagram
 } from 'lucide-react';
-import { toast } from 'react-hot-toast';
 import { usePostStore } from '@/store/postStore';
 
 export default function Header({ showBackButton = false }: { showBackButton?: boolean }) {
@@ -33,9 +32,7 @@ export default function Header({ showBackButton = false }: { showBackButton?: bo
   };
 
   const onSubmit = () => {
-    toast.success('전송');
     fetchPosts({ page: 1, limit: 10, query: query });
-
   };
 
   return (
