@@ -17,12 +17,12 @@ export default function FeedPage() {
 
   // 초기 1페이지
   useEffect(() => {
-    fetchPosts({page, limit});
+    fetchPosts({page:1, limit});
     return () => {
       // unmount 시점에 store의 posts 초기화
       usePostStore.setState({ posts: [], postsHasMore: true });
     };
-  }, [fetchPosts, page]);
+  }, [fetchPosts]);
 
   // onLoadMore
   const loadMore = async () => {
