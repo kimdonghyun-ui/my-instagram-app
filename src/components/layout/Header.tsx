@@ -136,26 +136,28 @@ export default function Header({ showBackButton = false }: { showBackButton?: bo
       </header>
 
       {/* 🔥 모바일 전용 검색바 (헤더 아래) */}
-      <div className="md:hidden px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-1 shadow-inner">
-          <Search className="w-4 h-4 text-gray-500 mr-2 cursor-pointer" onClick={onSubmit} />
-          <input
-            type="text"
-            placeholder="검색"
-            value={query}
-            onChange={(e) => handleSearch(e.target.value)}
-            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-              if (e.nativeEvent.isComposing) return;
-              if (e.key === 'Enter') onSubmit();
-            }}
-            className="
-              flex-1 bg-transparent outline-none text-sm
-              text-gray-800 dark:text-gray-200
-              placeholder-gray-400
-            "
-          />
+      {path === '/feed' && (
+        <div className="md:hidden px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-1 shadow-inner">
+            <Search className="w-4 h-4 text-gray-500 mr-2 cursor-pointer" onClick={onSubmit} />
+            <input
+              type="text"
+              placeholder="검색"
+              value={query}
+              onChange={(e) => handleSearch(e.target.value)}
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                if (e.nativeEvent.isComposing) return;
+                if (e.key === 'Enter') onSubmit();
+              }}
+              className="
+                flex-1 bg-transparent outline-none text-sm
+                text-gray-800 dark:text-gray-200
+                placeholder-gray-400
+              "
+            />
+          </div>
         </div>
-      </div>
+      )}
 
     </>
   );
