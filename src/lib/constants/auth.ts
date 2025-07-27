@@ -3,6 +3,8 @@
 //인증이 있어야만들어갈수 있는 페이지들(여기다 추가하면됨)
 export const protectedRoutes = [
     '/', 
+    '/feed',
+    '/upload',
     '/profile',
     // '/dashboard',
     // '/statistics',

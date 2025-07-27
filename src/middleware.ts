@@ -39,7 +39,10 @@ export const config = {
     '/',  // 홈(해당 프로젝트에서는 사용안함)
     '/login', // 로그인
     '/register', // 회원가입
-    '/profile', // 프로필
+    '/feed', // 피드
+    '/upload', // 업로드
+    '/profile/(.*)', // 프로필
+    
     // '/dashboard', // 대시보드
     // '/statistics',  // 통계
     // '/transactions',  // 거래내역
