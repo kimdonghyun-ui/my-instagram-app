@@ -29,7 +29,7 @@ interface PostStore {
   setCommentModal: (isOpen: boolean, post?: PostEntity) => void;
   addComment: (content: string, userId: number) => Promise<void>;
 
-  deletePost: () => void;
+  deletePost: (postId: number) => Promise<void>;
   setPosts: (posts: PostEntity[]) => void;
   reset: () => void;
 }
@@ -233,7 +233,36 @@ export const usePostStore = create<PostStore>((set, get) => ({
     set({ selectedPost: updatedPost });
   },
 
-  deletePost: () => set({ posts: [] }),
+  // ✅ 게시물 삭제
+  deletePost: async (postId) => {
+    let toastId = ''
+    set({ isLoading: true, error: null });
+    try {
+      // ✅ 1. API 요청
+      await fetchApi(`/posts/${postId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      // ✅ 2. 상태에서 삭제된 포스트 제거
+      set((state) => ({
+        otherPosts: state.otherPosts.filter((post) => post.id !== postId),
+      }));
+
+      toastId = toast.success('삭제 완료!', { duration: 3000 }) 
+    } catch (error) {
+      toastId = toast.error('삭제에 실패했습니다.', { duration: 3000 }) 
+      console.error('삭제 오류:', error);
+    } finally {
+      set({ isLoading: false });
+      setTimeout(() => {
+        //toast.custom 사용한 팝업 통해서 호출한 경우 토스트 팝업이 안닫히는 문제가 있어서 아래처럼 3초후 닫기 강제로 해줌
+        toast.dismiss(toastId);
+      }, 3000);
+    }
+  },
+
+
   
 
   setPosts: (posts) => set({ posts }),

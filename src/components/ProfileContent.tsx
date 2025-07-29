@@ -6,12 +6,12 @@ import { usePostStore } from '@/store/postStore';
 import Image from 'next/image';
 import { uploadImage } from '@/utils/uploadImage';
 import { toast } from 'react-hot-toast';
-import { Heart, Image as ImageIcon, Users, UserPlus } from 'lucide-react';
+import { Heart, Image as ImageIcon, Users, UserPlus, Pencil, Trash2 } from 'lucide-react';
 import InfiniteScroll from '@/components/InfiniteScroll';
 
 export default function ProfileContent({ paramsUserId }: { paramsUserId: string }) { // paramsUserId = 프로필 페이지 유저의 id
   const { user, handleProfileUpdate, fetchUserById, toggleFollow, otherProfileData } = useAuthStore();
-  const { fetchPostsByUser, otherPosts, otherPostsHasMore } = usePostStore();
+  const { fetchPostsByUser, otherPosts, otherPostsHasMore, deletePost } = usePostStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({
     username: user?.username || '',
@@ -76,6 +76,53 @@ export default function ProfileContent({ paramsUserId }: { paramsUserId: string 
     await fetchPostsByUser(Number(paramsUserId),nextPage, limit);
     setPage(nextPage);
   };
+
+
+
+
+
+
+  const confirmToast = (postId: number) => {
+    toast.custom((t) => (
+      <div className="z-[9999] bg-white dark:bg-gray-900 p-5 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
+        <p className="text-sm mb-4 text-center">정말 삭제하시겠어요?</p>
+        <div className="flex justify-center gap-3">
+          <button
+            onClick={() => {
+              toast.dismiss(t.id);
+              handleDelete(postId);
+            }}
+            className="px-4 py-1 bg-red-500 text-white rounded"
+          >
+            삭제
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="px-4 py-1 bg-gray-300 text-black rounded"
+          >
+            취소
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: Infinity,
+      position: "top-center", // ❗ 필요 시 위치 조정 가능
+    });
+  };
+  
+  // 게시물 삭제
+  const handleDelete = async (id: number) => {
+    await deletePost(id);
+  };
+
+
+
+  // 게시물 수정
+  const onEdit = (post: any) => {
+    alert('수정');
+  };
+
+
 
 
   // ✅ 게시물 / 프로필 불러오기
@@ -278,7 +325,7 @@ export default function ProfileContent({ paramsUserId }: { paramsUserId: string 
         isLoading={isLoading} // 로딩 상태
         loader={null} // 로딩 스피너(커스텀한걸 넣고싶으면 여기다 넣으면된 null은 기본 스피너)
       >
-        <section className="grid grid-cols-3 gap-1 p-1">
+        {/* <section className="grid grid-cols-3 gap-1 p-1">
           {otherPosts.map((post) => (
             <div key={post.id} className="relative aspect-square">
               {post.attributes.image?.data?.attributes?.url && (
@@ -291,7 +338,45 @@ export default function ProfileContent({ paramsUserId }: { paramsUserId: string 
               )}
             </div>
           ))}
+        </section> */}
+
+
+        <section className="grid grid-cols-3 gap-1 p-1">
+          {otherPosts.map((post) => (
+            <div key={post.id} className="relative aspect-square">
+              {post.attributes.image?.data?.attributes?.url && (
+                <Image
+                  src={post.attributes.image.data.attributes.url}
+                  alt="post"
+                  fill
+                  className="object-cover rounded-sm"
+                />
+              )}
+
+
+              {isMyProfile && (
+                <div className="absolute top-1 right-1 flex gap-1">
+                  <button
+                    onClick={() => onEdit(post)}
+                    className="bg-white/80 p-1 rounded-full shadow"
+                  >
+                    <Pencil size={14} className="text-gray-700" />
+                  </button>
+                  <button
+                    onClick={() => confirmToast(post.id)}
+                    className="bg-white/80 p-1 rounded-full shadow"
+                  >
+                    <Trash2 size={14} className="text-gray-700" />
+                  </button>
+                </div>
+              )}
+              
+            </div>
+          ))}
         </section>
+
+
+
       </InfiniteScroll>
 
       {/* ✅ 게시물이 없을 때 */}
