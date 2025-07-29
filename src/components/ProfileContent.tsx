@@ -8,6 +8,7 @@ import { uploadImage } from '@/utils/uploadImage';
 import { toast } from 'react-hot-toast';
 import { Heart, Image as ImageIcon, Users, UserPlus, Pencil, Trash2 } from 'lucide-react';
 import InfiniteScroll from '@/components/InfiniteScroll';
+import { PostEntity } from '@/types/post';
 
 export default function ProfileContent({ paramsUserId }: { paramsUserId: string }) { // paramsUserId = 프로필 페이지 유저의 id
   const { user, handleProfileUpdate, fetchUserById, toggleFollow, otherProfileData } = useAuthStore();
@@ -118,8 +119,9 @@ export default function ProfileContent({ paramsUserId }: { paramsUserId: string 
 
 
   // 게시물 수정
-  const onEdit = (post: any) => {
-    alert('수정');
+  const onEdit = (post: PostEntity) => {
+    console.log('수정',post);
+    toast.success('수정기능 준비중');
   };
 
 
