@@ -30,6 +30,9 @@ interface PostStore {
   addComment: (content: string, userId: number) => Promise<void>;
 
   deletePost: (postId: number) => Promise<void>;
+
+  editPost: (postId: number, caption: string, imageId: number) => Promise<void>;
+
   setPosts: (posts: PostEntity[]) => void;
   reset: () => void;
 }
@@ -261,6 +264,47 @@ export const usePostStore = create<PostStore>((set, get) => ({
       }, 3000);
     }
   },
+
+
+
+
+// ✅ 게시물 수정
+  editPost: async (postId, caption, imageId) => {
+    // console.log('editPost', postId, caption, imageId);
+    set({ isLoading: true, error: null });
+    try {
+      // ✅ 게시물 생성
+      const response = await fetchApi<StrapiResponse<PostEntity>>(`/posts/${postId}?populate[image]=*`, {
+        method: 'PUT',
+        credentials: 'include',
+        body: JSON.stringify({
+          data: {
+            caption: caption,
+            image: imageId,
+            // author: userId, // ✅ 작성자 ID를 넣어줘야 함
+          },
+        }),
+      });
+
+      // console.log('response', response);
+
+      // ✅ 상태값 업데이트
+      set((state) => ({
+        otherPosts: state.otherPosts.map((post) =>
+          post.id === postId ? response.data : post
+        ),
+      }));
+
+      toast.success('수정 완료!');
+    } catch (err) {
+      console.error(err);
+      toast.error('게시물 수정 실패');
+      set({ error: '게시물 수정 실패' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
 
 
   

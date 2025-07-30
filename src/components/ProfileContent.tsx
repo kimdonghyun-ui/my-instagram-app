@@ -9,6 +9,7 @@ import { toast } from 'react-hot-toast';
 import { Heart, Image as ImageIcon, Users, UserPlus, Pencil, Trash2 } from 'lucide-react';
 import InfiniteScroll from '@/components/InfiniteScroll';
 import { PostEntity } from '@/types/post';
+import EditPostModal from './EditPostModal';
 
 export default function ProfileContent({ paramsUserId }: { paramsUserId: string }) { // paramsUserId = 프로필 페이지 유저의 id
   const { user, handleProfileUpdate, fetchUserById, toggleFollow, otherProfileData } = useAuthStore();
@@ -23,6 +24,11 @@ export default function ProfileContent({ paramsUserId }: { paramsUserId: string 
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+
+  // 게시물 수정 모달
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 게시물 수정 모달 열기
+  const [editingPost, setEditingPost] = useState<PostEntity | null>(null); // 수정할 게시물
 
   // 내 프로필인지 아닌지 여부
   const isMyProfile = user?.id === Number(paramsUserId);
@@ -121,9 +127,10 @@ export default function ProfileContent({ paramsUserId }: { paramsUserId: string 
   // 게시물 수정
   const onEdit = (post: PostEntity) => {
     console.log('수정',post);
-    toast.success('수정기능 준비중');
+    // toast.success('수정기능 준비중');
+    setIsEditModalOpen(true)
+    setEditingPost(post);
   };
-
 
 
 
@@ -169,14 +176,15 @@ export default function ProfileContent({ paramsUserId }: { paramsUserId: string 
         <>
           <section className="bg-white dark:bg-gray-800 p-6 border-b">
             <div className="flex items-center gap-6">
-              <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-gray-300">
+              <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-gray-300"> 
                 {editedUser.profileImage ? (
                   <Image
                     src={editedUser.profileImage}
                     alt={editedUser.username}
-                    width={80}
-                    height={80}
-                    className="object-cover w-20 h-20"
+                    fill
+                    sizes="80px"
+                    className="object-cover rounded-full"
+                    priority
                   />
                 ) : (
                   <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">👤</div>
@@ -327,22 +335,6 @@ export default function ProfileContent({ paramsUserId }: { paramsUserId: string 
         isLoading={isLoading} // 로딩 상태
         loader={null} // 로딩 스피너(커스텀한걸 넣고싶으면 여기다 넣으면된 null은 기본 스피너)
       >
-        {/* <section className="grid grid-cols-3 gap-1 p-1">
-          {otherPosts.map((post) => (
-            <div key={post.id} className="relative aspect-square">
-              {post.attributes.image?.data?.attributes?.url && (
-                <Image
-                  src={post.attributes.image.data.attributes.url}
-                  alt="post"
-                  fill
-                  className="object-cover"
-                />
-              )}
-            </div>
-          ))}
-        </section> */}
-
-
         <section className="grid grid-cols-3 gap-1 p-1">
           {otherPosts.map((post) => (
             <div key={post.id} className="relative aspect-square">
@@ -351,19 +343,23 @@ export default function ProfileContent({ paramsUserId }: { paramsUserId: string 
                   src={post.attributes.image.data.attributes.url}
                   alt="post"
                   fill
+                  sizes="100px"
                   className="object-cover rounded-sm"
+                  priority
                 />
               )}
 
 
               {isMyProfile && (
                 <div className="absolute top-1 right-1 flex gap-1">
+                  {/* 수정버튼 */}
                   <button
                     onClick={() => onEdit(post)}
                     className="bg-white/80 p-1 rounded-full shadow"
                   >
                     <Pencil size={14} className="text-gray-700" />
                   </button>
+                  {/* 삭제버튼 */}
                   <button
                     onClick={() => confirmToast(post.id)}
                     className="bg-white/80 p-1 rounded-full shadow"
@@ -376,9 +372,6 @@ export default function ProfileContent({ paramsUserId }: { paramsUserId: string 
             </div>
           ))}
         </section>
-
-
-
       </InfiniteScroll>
 
       {/* ✅ 게시물이 없을 때 */}
@@ -402,6 +395,13 @@ export default function ProfileContent({ paramsUserId }: { paramsUserId: string 
           <p className="text-sm text-gray-400">이 사용자가 아직 게시물을 작성하지 않았어요.</p>
         </div>
       )}
+
+
+      {/* ✅ 게시물 수정 모달 */}
+      <EditPostModal
+        post={isEditModalOpen ? editingPost : null}
+        onClose={() => setIsEditModalOpen(false)}
+      />
 
     </div>
   );
