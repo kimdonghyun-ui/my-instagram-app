@@ -195,12 +195,12 @@ export const usePostStore = create<PostStore>((set, get) => ({
   setCommentModal: (isOpen: boolean, post?: PostEntity) => set({isCommentOpen: isOpen, selectedPost: isOpen ? post ?? null : null,}),
 
   addComment: async (content, userId) => {
-    const { selectedPost } = get(); // 이미 바텀시트 열때 함께 전달된 게시물 데이터(이미 해당게시물 데이터가 들어있음)
+    const { selectedPost, posts } = get(); // 이미 바텀시트 열때 함께 전달된 게시물 데이터(이미 해당게시물 데이터가 들어있음)
     if (!selectedPost) return;
 
     // ✅ Strapi로 댓글 POST
     // 1. 댓글 생성
-    const commentRes = await fetchApi<StrapiResponse<CommentEntity>>('/comments', {
+    const commentRes = await fetchApi<StrapiResponse<CommentEntity>>('/comments?populate[author]=*', {
       method: 'POST',
       body: JSON.stringify({
         data: {
@@ -227,9 +227,33 @@ export const usePostStore = create<PostStore>((set, get) => ({
 
 
 
+    const newComment = commentRes.data;
+
+    const updatedSelectedPost = {
+      ...selectedPost,
+      attributes: {
+        ...selectedPost.attributes,
+        comments: {
+          ...selectedPost.attributes.comments,
+          data: [...(selectedPost.attributes.comments?.data || []), newComment],
+        },
+      },
+    };
+
+    console.log('updatedSelectedPost', updatedSelectedPost);
+  // 2. posts 목록도 갱신
+  const updatedPosts = posts.map((post) =>
+    post.id === selectedPost.id ? updatedSelectedPost : post
+  );
+
+  set({
+    selectedPost: updatedSelectedPost,
+    posts: updatedPosts,
+  });
+
 
     // ✅ 다시 게시물 목록 불러와서 상태 갱신
-    await get().fetchPosts({page: 1, limit: 3});
+    // await get().fetchPosts({page: 1, limit: 3});
 
     // ✅ 현재 선택된 게시물도 최신 데이터로 갱신
     const updatedPost = get().posts.find((p) => p.id === selectedPost.id) || null;

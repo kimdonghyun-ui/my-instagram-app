@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { usePostStore } from '@/store/postStore';
@@ -13,6 +13,9 @@ export default function FeedWithBottomSheet() {
     const [newComment, setNewComment] = useState('');
     const { user } = useAuthStore();
     const { isCommentOpen, selectedPost, setCommentModal, addComment } = usePostStore();
+
+    const bottomRef = useRef<HTMLDivElement | null>(null); // 👈 맨 아래 ref
+
 
     // ✅ 댓글 모달 닫기
     const closeComments = () => {
@@ -27,6 +30,13 @@ export default function FeedWithBottomSheet() {
         await addComment(newComment, user.id);
         setNewComment(''); // 인풋 초기화
     };
+
+    // ✅ 댓글 추가 후 맨 아래로 스크롤
+    useEffect(() => {
+        if (bottomRef.current) {
+            bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [selectedPost?.attributes.comments?.data.length]); // 댓글 수가 변할 때만 실행
 
 
     return (
@@ -102,6 +112,9 @@ export default function FeedWithBottomSheet() {
                         </div>
                         );
                     })}
+
+                                    {/* ✅ 스크롤 끝 기준점 */}
+                <div ref={bottomRef} />
                     </div>
 
 
