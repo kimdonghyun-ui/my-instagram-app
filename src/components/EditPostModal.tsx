@@ -22,7 +22,7 @@ export default function EditPostModal({ post, onClose }: EditPostModalProps) {
 
 
 
-
+const [isLoading, setIsLoading] = useState(false);
 
 
 
@@ -37,10 +37,12 @@ useEffect(() => {
   if (post) {
     const caption = post.attributes.caption || '';
     const image = post.attributes.image?.data?.attributes.url || null;
+    const imageId = post.attributes.image?.data?.id || null;
 
     // 초기 상태 저장
     setInitialCaption(caption);
     setInitialImage(image);
+    setImageId(imageId);
 
     // 현재 상태 초기화
     setCaption(caption);
@@ -53,13 +55,14 @@ useEffect(() => {
 
 
 if (!post) return null;
-const isChanged = caption !== initialCaption || preview !== initialImage; // 변경된 내용이 있는지 없는지 체크
+const isChanged = (!isLoading) && (caption !== initialCaption || preview !== initialImage); // 변경된 내용이 있는지 없는지 체크
 
 
 const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
 ) => {
     if (event.target.files && event.target.files.length > 0) {
+        setIsLoading(true);
         const file = event.target.files[0]; // ✅ 선택된 파일 객체
         setPreview(URL.createObjectURL(file));
         try {
@@ -69,6 +72,8 @@ const handleFileChange = async (
         } catch (error) {
             console.error("파일 변환 중 오류 발생:", error);
             setPreview(initialImage); // 오류 발생시 초기 이미지 복구
+        } finally {
+            setIsLoading(false);
         }
     }
 };
@@ -150,7 +155,7 @@ const handleFileChange = async (
                     : 'bg-blue-500 hover:bg-blue-600'}
                 `}
             >
-                저장
+                {isLoading ? '이미지 업로드중...' : '저장'}
             </button>
         </div>
       </div>
