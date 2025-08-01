@@ -5,29 +5,39 @@ import { usePostStore } from '@/store/postStore';
 import { Plus } from "lucide-react";
 import PostCard from '@/components/PostCard';
 import FeedWithBottomSheet from '@/components/FeedWithBottomSheet';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import InfiniteScroll from '@/components/InfiniteScroll';
+
 
 export default function FeedPage() {
   const { posts, isLoading, fetchPosts, postsHasMore } = usePostStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+
   const [page, setPage] = useState(1);
   const limit = 3; // 한 번에 2개씩
+
+  const [query, setQuery] = useState('');
+
 
 
   // 초기 1페이지
   useEffect(() => {
-    fetchPosts({page:1, limit});
+    const q = searchParams.get('query') || '';
+    setQuery(q);
+    setPage(1);
+    fetchPosts({page:1, limit, query: q});
     return () => {
       // unmount 시점에 store의 posts 초기화
       usePostStore.setState({ posts: [], postsHasMore: true });
     };
-  }, [fetchPosts]);
+  }, [fetchPosts, searchParams]);
 
   // onLoadMore
   const loadMore = async () => {
     const nextPage = page + 1;
-    await fetchPosts({page: nextPage, limit});
+    await fetchPosts({page: nextPage, limit, query});
     setPage(nextPage);
   };
 

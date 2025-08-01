@@ -11,16 +11,16 @@ import {
   User,
   LogOut,
   Search,
-  Instagram
+  Instagram,
+  X
 } from 'lucide-react';
-import { usePostStore } from '@/store/postStore';
 
 export default function Header({ showBackButton = false }: { showBackButton?: boolean }) {
   const router = useRouter();
   const path = usePathname();
+
   const accessToken = useAuthStore((state) => state.accessToken);
   const { performLogout, user } = useAuthStore();
-  const { fetchPosts } = usePostStore();
   const handleLogout = async () => {
     await performLogout();
   };
@@ -32,7 +32,8 @@ export default function Header({ showBackButton = false }: { showBackButton?: bo
   };
 
   const onSubmit = () => {
-    fetchPosts({ page: 1, limit: 10, query: query });
+    // 현재 경로 기준으로 이동, query param 반영
+    router.push(`/feed?query=${encodeURIComponent(query)}`);
   };
 
   return (
@@ -89,6 +90,7 @@ export default function Header({ showBackButton = false }: { showBackButton?: bo
               placeholder="검색"
               value={query}
               onChange={(e) => handleSearch(e.target.value)}
+              // onKeyDown={onSubmit}
               onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                 // 한글 입력 조합 중이면 무시
                 // if (e.nativeEvent.isComposing) return;
@@ -103,6 +105,19 @@ export default function Header({ showBackButton = false }: { showBackButton?: bo
                 placeholder-gray-400
               "
             />
+
+            {/* ✅ 검색 input 비우기 버튼 */}
+            <button
+              onClick={() => handleSearch('')}
+              className={`
+                ml-2 text-gray-400 hover:text-gray-600 dark:hover:text-white
+                transition-opacity duration-200
+                ${query ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
+              `}
+            >
+              <X className="w-4 h-4" />
+            </button>
+
           </div>
 
           {/* ✅ 오른쪽: 아이콘 메뉴 */}
