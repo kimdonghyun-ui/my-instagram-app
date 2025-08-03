@@ -39,7 +39,7 @@ export default function PostCard({ post }: PostCardProps) {
     <article className="bg-white border-b border-gray-200">
       {/* 작성자 영역 */}
       <div className="flex items-center justify-between px-3 py-2">
-        <div className="flex items-center space-x-3" onClick={() => router.push(`/profile/${author?.data?.id}`)}>
+        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => router.push(`/profile/${author?.data?.id}`)}>
           <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-200">
             {/* 프로필 이미지 */}
             {author?.data?.attributes?.profileImage && (
