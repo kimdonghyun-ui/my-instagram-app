@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Send } from 'lucide-react';
 import { X } from 'lucide-react';
 import { usePostStore } from '@/store/postStore';
 import { useAuthStore } from '@/store/authStore';
@@ -134,14 +135,19 @@ export default function FeedWithBottomSheet() {
                         className="flex-1 p-2 border rounded-lg text-sm"
                         />
                         <button
-                        onClick={(e) => {
-                            e.preventDefault(); // ✅ 기본 submit 막기
-                            handleAddComment();
-                            
+                            disabled={!newComment.trim()}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleAddComment();
                             }}
-                        className="text-blue-500 font-bold text-sm"
+                        className={`font-bold text-sm
+                            ${!newComment.trim() 
+                            ? "text-gray-400 cursor-not-allowed"  // 비활성화 스타일
+                            : "text-blue-500"                     // 활성화 스타일
+                            }`
+                        }
                         >
-                        게시
+                            <Send className="w-5 h-5" />
                         </button>
                     </div>
                     </motion.div>
