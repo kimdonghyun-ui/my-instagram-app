@@ -288,6 +288,7 @@ export const useAuthStore = create<AuthStore>()(
             credentials: "include",
           });
     
+          
           const data: { token: string | null } = await res.json();
           set({ accessToken: data.token });
         } catch (error) {
