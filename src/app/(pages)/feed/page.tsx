@@ -7,7 +7,7 @@ import PostCard from '@/components/PostCard';
 import FeedWithBottomSheet from '@/components/FeedWithBottomSheet';
 import { useRouter, useSearchParams } from 'next/navigation';
 import InfiniteScroll from '@/components/InfiniteScroll';
-
+import { useAuthStore } from '@/store/authStore';
 
 export default function FeedPage() {
   const { posts, isLoading, fetchPosts, postsHasMore } = usePostStore();
@@ -20,10 +20,11 @@ export default function FeedPage() {
 
   const [query, setQuery] = useState('');
 
-
+  const accessToken = useAuthStore((state) => state.accessToken);
 
   // 초기 1페이지
   useEffect(() => {
+    console.log('feed페이지에서 accessToken 스토어 보기', accessToken)
     const q = searchParams.get('query') || '';
     setQuery(q);
     setPage(1);

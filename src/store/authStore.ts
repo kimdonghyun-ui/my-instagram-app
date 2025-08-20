@@ -82,7 +82,7 @@ export const useAuthStore = create<AuthStore>()(
           // 토큰은 응답값으로 서버에서 주지 않고 httpOnly 쿠키에 저장 해줌
           // httpOnly 쿠키는 바로 접근이 어려우므로
           // useAuthStatus.ts 에서 useEffect 에 user 를 의존하여 실행되게 하고 그안에서 쿠키 토큰을 불러오고 그걸 setAccessToken 에 저장해줌
-
+          await get().checkAuth();
           toast.success('로그인 성공!');
           useRedirectStore.getState().setLinkName('/feed'); // ✅ 로그인 후 리다이렉트 처리
 
