@@ -83,6 +83,7 @@ export const usePostStore = create<PostStore>((set, get) => ({
     } catch {
       set({ error: '게시물 불러오기 실패' });
       toast.error('피드 불러오기 실패!');
+      set({ postsHasMore: false });
     } finally {
       set({ isLoading: false });
     }
