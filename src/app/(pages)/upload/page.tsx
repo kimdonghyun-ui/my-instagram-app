@@ -20,18 +20,21 @@ export default function UploadPage() {
     const handleFileChange = async (
         event: React.ChangeEvent<HTMLInputElement>,
     ) => {
-        if (event.target.files && event.target.files.length > 0) {
-            const file = event.target.files[0]; // ✅ 선택된 파일 객체
-            setPreview(URL.createObjectURL(file));
-            try {
-                const images = await uploadImage(file); // ✅ 이미지를 cloudinary 서버에 업로드
-                setImageId(images.id); // ✅ 상태 업데이트
-                console.log("이미지 업로드 결과:", images.url);
-            } catch (error) {
-                console.error("파일 변환 중 오류 발생:", error);
-                setPreview(null);
-            }
+      if (event.target.files && event.target.files.length > 0) {
+        const file = event.target.files[0]; // ✅ 선택된 파일 객체
+        setPreview(URL.createObjectURL(file));
+        try {
+          setIsUploading(true);
+          const images = await uploadImage(file); // ✅ 이미지를 cloudinary 서버에 업로드
+          setImageId(images.id); // ✅ 상태 업데이트
+          console.log("이미지 업로드 결과:", images.url);
+        } catch (error) {
+          console.error("파일 변환 중 오류 발생:", error);
+          setPreview(null);
+        } finally {
+          setIsUploading(false);
         }
+      }
     };
 
 
