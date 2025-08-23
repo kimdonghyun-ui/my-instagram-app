@@ -16,6 +16,7 @@ export default function UploadPage() {
   const [imageId, setImageId] = useState<number | null>(null); //프로필 이미지
   const [preview, setPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isImgUploading, setIsImgUploading] = useState(false);
 
     const handleFileChange = async (
         event: React.ChangeEvent<HTMLInputElement>,
@@ -24,7 +25,7 @@ export default function UploadPage() {
         const file = event.target.files[0]; // ✅ 선택된 파일 객체
         setPreview(URL.createObjectURL(file));
         try {
-          setIsUploading(true);
+          setIsImgUploading(true);
           const images = await uploadImage(file); // ✅ 이미지를 cloudinary 서버에 업로드
           setImageId(images.id); // ✅ 상태 업데이트
           console.log("이미지 업로드 결과:", images.url);
@@ -32,7 +33,7 @@ export default function UploadPage() {
           console.error("파일 변환 중 오류 발생:", error);
           setPreview(null);
         } finally {
-          setIsUploading(false);
+          setIsImgUploading(false);
         }
       }
     };
@@ -57,7 +58,7 @@ export default function UploadPage() {
     };
 
   return (
-    <main className="max-w-md mx-auto px-4 py-6">
+    <main className="max-w-md mx-auto px-4 py-6 relative">
       <h1 className="text-xl font-bold mb-4">게시물 업로드</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* 이미지 미리보기 */}
@@ -95,6 +96,18 @@ export default function UploadPage() {
           {isUploading ? '업로드 중...' : '업로드'}
         </button>
       </form>
+
+      {/* 로딩 오버레이 */}
+      {isImgUploading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="flex space-x-2">
+            <div className="w-3 h-3 bg-white rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+            <div className="w-3 h-3 bg-white rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+            <div className="w-3 h-3 bg-white rounded-full animate-bounce"></div>
+          </div>
+        </div>
+      )}
+
     </main>
   );
 }

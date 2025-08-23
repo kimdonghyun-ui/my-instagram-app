@@ -98,9 +98,9 @@ export default function LoginForm() {
             </form>
 
             {/* ✅ Heroku 슬립 안내 문구 */}
-            <p className="text-center text-xs text-red-500 mt-4 font-medium">
+            {/* <p className="text-center text-xs text-red-500 mt-4 font-medium">
               ※ 첫 로그인 시, 백엔드 서버 기동으로 인해 약간의 지연이 발생할 수 있습니다.
-            </p>
+            </p> */}
 
 
           </div>
